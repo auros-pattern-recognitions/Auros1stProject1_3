@@ -143,10 +143,11 @@ namespace ConsoleApp1
                         + "Delta");    // 컬럼명 쓰기.
 
                     double radianTheta_j = Degree2Radian((double)theta_j);
-
+                    //WriteLine("======================================================");
                     for (int i = 0; i < waveLength.Count; i++)
                     {
                         Complex Nk2 = new Complex(refractiveIndex[i], -extinctionCoefficient[i]);
+                        //WriteLine(waveLength[i] + " " + Nk2);
 
                         double Nk2_length = Sqrt(Pow(Nk2.Real, 2) + Pow(Nk2.Imaginary, 2));
                         double Nk2_angle = Atan(Nk2.Imaginary / Nk2.Real);
@@ -164,18 +165,19 @@ namespace ConsoleApp1
                         double r01s = ((Nj * Cos(radianTheta_j)) - Nk2_exp * Cos(theta_k)) /
                                        ((Nj * Cos(radianTheta_j)) + Nk2_exp * Cos(theta_k));
 
-                        double ratio = Pow(r01p, 2) / Pow(r01s, 2);
+                        double ratio = r01p / r01s;
 
                         //Complex ratioComp = Complex.Exp(Complex.Log(ratio));
 
-                        double Psi = Atan(Abs(r01p / r01s));
-                        double Delta = Math.Log(ratio / Tan(Psi));
+                        double Psi = Atan(ratio);
+                        double Delta = Log(Abs(ratio));
 
                         NewSpectrumOutputFile.WriteLine(
                             waveLength[i] + "\t"
                             + Radian2Degree(Psi) + "\t"
                             + Abs(Radian2Degree(Delta)));
                     }
+                    //WriteLine("======================================================");
                 }
             }
         }
