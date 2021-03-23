@@ -19,7 +19,7 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             // Si_new.txt 파일 로딩(물성값)
-            string[] Si_data = File.ReadAllLines(@"..\SiN.txt");
+            string[] Si_data = File.ReadAllLines(@"..\SiO2_new.txt");
             int dataNum = Si_data.Length;
 
             // 파장, 굴절률, 소광계수 각각의 데이터를 담을 배열 선언
@@ -27,7 +27,7 @@ namespace ConsoleApp1
             List<double> refractiveIndex = new List<double>();
             List<double> extinctionCoefficient = new List<double>();
 
-            for (int i = 2; i < dataNum; i++)
+            for (int i = 1; i < dataNum; i++)
             {
                 string[] temp = Si_data[i].Split((char)0x09);
                 waveLength.Add(double.Parse(temp[0]));
@@ -37,7 +37,7 @@ namespace ConsoleApp1
 
             // 입사각에 대한 반사계수 비 (40 ~ 85, 2도 간격)
 
-            double Nj = 1.0; // 공기의 굴절률 = 1
+
 
             // 파장이 700nm인 데이터의 인덱스 검색
             int IndexOf700nm = 0;
@@ -52,10 +52,7 @@ namespace ConsoleApp1
 
             // 파장이 700nm일때 굴절률과 소광계수를 통해 복소 굴절률을 구한다.
             Complex Nk = new Complex(refractiveIndex[IndexOf700nm], -extinctionCoefficient[IndexOf700nm]);
-
-            double Nk_length = Sqrt(Pow(Nk.Real, 2) + Pow(Nk.Imaginary, 2));
-            double Nk_angle = Atan(Nk.Imaginary / Nk.Real);
-            double Nk_exp = Nk_length * Math.Exp(Nk_angle);
+            Complex Nj = new Complex(1, 0); // 공기의 굴절률 = 1
 
             List<double> refractiveCoefficient_p = new List<double>();
             List<double> refractiveCoefficient_s = new List<double>();
@@ -63,22 +60,28 @@ namespace ConsoleApp1
 
             for (int theta_j = 40; theta_j <= 85; theta_j += 2)
             {
-                double radianTheta_j = Degree2Radian((double)theta_j);
+
+                Complex Sintheta_j = new Complex(Sin(Degree2Radian((double)theta_j)), 0);
+                Complex Costheta_j = new Complex(Cos(Degree2Radian((double)theta_j)), 0);
 
                 // 스넬 법칙
-                double theta_k = Asin((Nj * Sin(radianTheta_j)) / Nk_exp);
+
+                Complex Sintheta_k = (Nj / Nk) * Sintheta_j;
+                double theta_k = Asin(Sintheta_k.Real);
+                Complex Costheta_k = new Complex(Cos(Degree2Radian(theta_k)), 0);
 
                 // p파 반사계수
-                double r01p = ((Nk_exp * Cos(radianTheta_j)) - Nj * Cos(theta_k)) /
-                              ((Nk_exp * Cos(radianTheta_j)) + Nj * Cos(theta_k));
+                Complex r01p = ((Nk * Costheta_j) - (Nj * Costheta_k)) /
+                                ((Nk * Costheta_j) + (Nj * Costheta_k));
 
                 // s파 반사계수
-                double r01s = ((Nj * Cos(radianTheta_j)) - Nk_exp * Cos(theta_k)) /
-                               ((Nj * Cos(radianTheta_j)) + Nk_exp * Cos(theta_k));
+                Complex r01s = ((Nj * Costheta_j) - (Nk * Costheta_k)) /
+                                ((Nj * Costheta_j) + (Nk * Costheta_k));
+
 
                 incidenceAngle.Add(theta_j);
-                refractiveCoefficient_p.Add(Pow(r01p, 2));
-                refractiveCoefficient_s.Add(Pow(r01s, 2));
+                refractiveCoefficient_p.Add(Pow(r01p.Magnitude, 2));
+                refractiveCoefficient_s.Add(Pow(r01s.Magnitude, 2));
             }
             #region 반사계수 출력
 
@@ -103,83 +106,148 @@ namespace ConsoleApp1
 
             #region 입사각에 따른 반사율 파일 저장
 
-            //int LoopNum = incidenceAngle.Count();
-            //// 파일 쓰기.
-            //using (StreamWriter NewSpectrumOutputFile = new StreamWriter("r01p, r01s_test.dat"))
-            //{
-            //    // 컬럼 명 쓰기.
-            //    NewSpectrumOutputFile.WriteLine(
-            //        "AOI" + "\t"
-            //        + "r01p" + "\t"
-            //        + "r01s");    // 컬럼명 쓰기.
-            //    // WriteLine(Columns);
+            int LoopNum = incidenceAngle.Count();
+            // 파일 쓰기.
+            using (StreamWriter NewSpectrumOutputFile = new StreamWriter("r01p, r01s_test.dat"))
+            {
+                // 컬럼 명 쓰기.
+                NewSpectrumOutputFile.WriteLine(
+                    "AOI" + "\t"
+                    + "r01p" + "\t"
+                    + "r01s");    // 컬럼명 쓰기.
+                // WriteLine(Columns);
 
-            //    // 스펙트럼 데이터 쓰기.
-            //    for (int i = 0; i < LoopNum; i++)
-            //    {
-            //        // tsv 데이터 형식으로 데이터를 쓴다.
-            //        NewSpectrumOutputFile.WriteLine(
-            //            incidenceAngle[i] + "\t"
-            //            + refractiveCoefficient_p[i] + "\t"
-            //            + refractiveCoefficient_s[i]);
+                // 스펙트럼 데이터 쓰기.
+                for (int i = 0; i < LoopNum; i++)
+                {
+                    // tsv 데이터 형식으로 데이터를 쓴다.
+                    NewSpectrumOutputFile.WriteLine(
+                        incidenceAngle[i] + "\t"
+                        + refractiveCoefficient_p[i] + "\t"
+                        + refractiveCoefficient_s[i]);
 
-            //    }
-            //}
+                }
+            }
             #endregion
-            //WriteLine(Complex.Log(E));
 
-            List<double> alpha = new List<double>();
-            List<double> beta = new List<double>();
+            #region 반사계수를 이용한 alpha, beta 계산
+
+            double polarizerAngle = Degree2Radian(45.0);
 
             for (int theta_j = 40; theta_j <= 85; theta_j += 5)
             {
                 string filename = theta_j.ToString();
-                using (StreamWriter NewSpectrumOutputFile = new StreamWriter("AOI_" + filename + ".dat"))
+                using (StreamWriter NewSpectrumOutputFile = new StreamWriter("AOI_" + filename + "_ab.dat"))
                 {
                     // 컬럼 명 쓰기.
                     NewSpectrumOutputFile.WriteLine(
                         "waveLength" + "\t"
-                        + "Psi" + "\t"
-                        + "Delta");    // 컬럼명 쓰기.
+                        + "alpha" + "\t"
+                        + "beta");    // 컬럼명 쓰기.
 
                     double radianTheta_j = Degree2Radian((double)theta_j);
-                    //WriteLine("======================================================");
+                    Complex Sintheta_j2 = new Complex(Sin(Degree2Radian((double)theta_j)), 0);
+                    Complex Costheta_j2 = new Complex(Cos(Degree2Radian((double)theta_j)), 0);
+
                     for (int i = 0; i < waveLength.Count; i++)
                     {
+
+
                         Complex Nk2 = new Complex(refractiveIndex[i], -extinctionCoefficient[i]);
-                        //WriteLine(waveLength[i] + " " + Nk2);
-
-                        double Nk2_length = Sqrt(Pow(Nk2.Real, 2) + Pow(Nk2.Imaginary, 2));
-                        double Nk2_angle = Atan(Nk2.Imaginary / Nk2.Real);
-                        double Nk2_exp = Nk2_length * Math.Exp(Nk2_angle);
-
+                        Complex Nj2 = new Complex(1, 0); // 공기의 굴절률 = 1
 
                         // 스넬 법칙
-                        double theta_k = Asin((Nj * Sin(radianTheta_j)) / Nk2_exp);
+                        Complex Sintheta_k2 = (Nj2 / Nk2) * Sintheta_j2;
+                        double theta_k2 = Asin(Sintheta_k2.Real);
+                        Complex Costheta_k2 = new Complex(Cos(Degree2Radian(theta_k2)), 0);
 
                         // p파 반사계수
-                        double r01p = ((Nk2_exp * Cos(radianTheta_j)) - Nj * Cos(theta_k)) /
-                                      ((Nk2_exp * Cos(radianTheta_j)) + Nj * Cos(theta_k));
+                        Complex r01p = ((Nk2 * Costheta_j2) - (Nj2 * Costheta_k2)) /
+                                        ((Nk2 * Costheta_j2) + (Nj2 * Costheta_k2));
 
                         // s파 반사계수
-                        double r01s = ((Nj * Cos(radianTheta_j)) - Nk2_exp * Cos(theta_k)) /
-                                       ((Nj * Cos(radianTheta_j)) + Nk2_exp * Cos(theta_k));
+                        Complex r01s = ((Nj2 * Costheta_j2) - (Nk2 * Costheta_k2)) /
+                                        ((Nj2 * Costheta_j2) + (Nk2 * Costheta_k2));
 
-                        double ratio = r01p / r01s;
+                        Complex ratio = r01p / r01s;
 
                         //Complex ratioComp = Complex.Exp(Complex.Log(ratio));
 
-                        double Psi = Atan(ratio);
-                        double Delta = Log(Abs(ratio));
+                        double Psi = Atan(ratio.Magnitude);
+                        double Delta = ratio.Phase;
+
+                        double alpha = (Pow(Tan(Psi), 2) - Pow(Tan(polarizerAngle), 2)) /
+                                        (Pow(Tan(Psi), 2) + Pow(Tan(polarizerAngle), 2));
+
+                        double beta = (2 * Tan(Psi) * Cos(Delta) * Tan(polarizerAngle)) /
+                                        (Pow(Tan(Psi), 2) + Pow(Tan(polarizerAngle), 2));
 
                         NewSpectrumOutputFile.WriteLine(
                             waveLength[i] + "\t"
-                            + Radian2Degree(Psi) + "\t"
-                            + Abs(Radian2Degree(Delta)));
+                            + alpha + "\t"
+                            + beta);
+
+
                     }
                     //WriteLine("======================================================");
                 }
             }
+            #endregion
+
+            List<double> alpha_cal = new List<double>();
+            List<double> beta_cal = new List<double>();
+
+
+            waveLength.Clear();
+
+
+            string[] Si2nm_data = File.ReadAllLines(@"SiO2 2nm_on_Si_new.dat");
+            int DataNum = Si2nm_data.Length;
+            for (int i = 1; i < DataNum; i++)
+            {
+                string[] temp = Si2nm_data[i].Split((char)0x09);
+                waveLength.Add(double.Parse(temp[0]));
+                alpha_cal.Add(double.Parse(temp[2]));
+                beta_cal.Add(double.Parse(temp[3]));
+            }
+
+
+            string[] Si_exp_data = File.ReadAllLines(@"AOI_65_ab.dat");
+            DataNum = Si_exp_data.Length;
+
+            List<double> alpha_exp = new List<double>();
+            List<double> beta_exp = new List<double>();
+
+            for (int i = 1; i < DataNum; i++)
+            {
+                string[] temp = Si_exp_data[i].Split((char)0x09);
+                waveLength.Add(double.Parse(temp[0]));
+                alpha_exp.Add(double.Parse(temp[1]));
+                beta_exp.Add(double.Parse(temp[2]));
+            }
+
+            double sum = 0;
+
+            using (StreamWriter NewSpectrumOutputFile = new StreamWriter("MSE_ab.dat"))
+            {
+
+                DataNum = alpha_exp.Count();
+                for (int i = 0; i < DataNum; i++)
+                {
+                    double difference_MSE = Pow((alpha_exp[i] - alpha_cal[i]), 2) + Pow((beta_exp[i] - beta_cal[i]), 2);
+                    sum += difference_MSE;
+
+                    double diff_alpha = (alpha_exp[i] - alpha_cal[i]);
+                    double diff_beta = (beta_exp[i] - beta_cal[i]);
+                    WriteLine(i + " " + "alpha 의 차이 : " + diff_alpha + "    beta 의 차이 : " + diff_beta);
+
+                    NewSpectrumOutputFile.WriteLine(waveLength[i] + "\t" + diff_alpha + "\t" + diff_beta);
+                }
+            }
+
+            double MSE = sum / DataNum;
+            WriteLine("최종 MSE : " + MSE);
+
         }
     }
 }
