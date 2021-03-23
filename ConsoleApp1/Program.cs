@@ -19,7 +19,7 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             // Si_new.txt 파일 로딩(물성값)
-            string[] Si_data = File.ReadAllLines(@"..\SiO2_new.txt");
+            string[] Si_data = File.ReadAllLines(@"..\Si_new.txt");
             int dataNum = Si_data.Length;
 
             // 파장, 굴절률, 소광계수 각각의 데이터를 담을 배열 선언
@@ -194,6 +194,8 @@ namespace ConsoleApp1
             }
             #endregion
 
+            #region 측정값과 계산값의 MSE 계산
+
             List<double> alpha_cal = new List<double>();
             List<double> beta_cal = new List<double>();
 
@@ -239,7 +241,7 @@ namespace ConsoleApp1
 
                     double diff_alpha = (alpha_exp[i] - alpha_cal[i]);
                     double diff_beta = (beta_exp[i] - beta_cal[i]);
-                    WriteLine(i + " " + "alpha 의 차이 : " + diff_alpha + "    beta 의 차이 : " + diff_beta);
+                    WriteLine(waveLength[i] + " " + "alpha 의 차이 : " + diff_alpha + "    beta 의 차이 : " + diff_beta);
 
                     NewSpectrumOutputFile.WriteLine(waveLength[i] + "\t" + diff_alpha + "\t" + diff_beta);
                 }
@@ -248,6 +250,7 @@ namespace ConsoleApp1
             double MSE = sum / DataNum;
             WriteLine("최종 MSE : " + MSE);
 
+            #endregion
         }
     }
 }
