@@ -67,9 +67,9 @@ namespace ConsoleApp1
                 // 스넬 법칙
 
                 Complex Sintheta_k = (Nj / Nk) * Sintheta_j;
-                double theta_k = Asin(Sintheta_k.Real);
-                Complex Costheta_k = new Complex(Cos(theta_k), 0);
-
+                Complex theta_k = Complex.Asin(Sintheta_k);
+                Complex Costheta_k = Complex.Cos(theta_k);
+                WriteLine(Sintheta_k + "         " + Costheta_k);
                 // p파 반사계수
                 Complex r01p = ((Nk * Costheta_j) - (Nj * Costheta_k)) /
                                 ((Nk * Costheta_j) + (Nj * Costheta_k));
@@ -78,7 +78,7 @@ namespace ConsoleApp1
                 Complex r01s = ((Nj * Costheta_j) - (Nk * Costheta_k)) /
                                 ((Nj * Costheta_j) + (Nk * Costheta_k));
 
-
+                
                 incidenceAngle.Add(theta_j);
                 refractiveCoefficient_p.Add(Pow(r01p.Magnitude, 2));
                 refractiveCoefficient_s.Add(Pow(r01s.Magnitude, 2));
@@ -158,8 +158,9 @@ namespace ConsoleApp1
 
                         // 스넬 법칙
                         Complex Sintheta_k2 = (Nj2 / Nk2) * Sintheta_j2;
-                        double theta_k2 = Asin(Sintheta_k2.Real);
-                        Complex Costheta_k2 = new Complex(Cos(theta_k2), 0);
+                        Complex theta_k2 = Complex.Asin(Sintheta_k2);
+                        Complex Costheta_k2 = Complex.Cos(theta_k2);
+                        
 
                         // p파 반사계수
                         Complex r01p = ((Nk2 * Costheta_j2) - (Nj2 * Costheta_k2)) /
