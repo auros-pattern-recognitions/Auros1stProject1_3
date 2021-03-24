@@ -68,7 +68,7 @@ namespace ConsoleApp1
 
                 Complex Sintheta_k = (Nj / Nk) * Sintheta_j;
                 double theta_k = Asin(Sintheta_k.Real);
-                Complex Costheta_k = new Complex(Cos(Degree2Radian(theta_k)), 0);
+                Complex Costheta_k = new Complex(Cos(theta_k), 0);
 
                 // p파 반사계수
                 Complex r01p = ((Nk * Costheta_j) - (Nj * Costheta_k)) /
@@ -146,8 +146,8 @@ namespace ConsoleApp1
                         + "beta");    // 컬럼명 쓰기.
 
                     double radianTheta_j = Degree2Radian((double)theta_j);
-                    Complex Sintheta_j2 = new Complex(Sin(Degree2Radian((double)theta_j)), 0);
-                    Complex Costheta_j2 = new Complex(Cos(Degree2Radian((double)theta_j)), 0);
+                    Complex Sintheta_j2 = new Complex(Sin(radianTheta_j), 0);
+                    Complex Costheta_j2 = new Complex(Cos(radianTheta_j), 0);
 
                     for (int i = 0; i < waveLength.Count; i++)
                     {
@@ -159,7 +159,7 @@ namespace ConsoleApp1
                         // 스넬 법칙
                         Complex Sintheta_k2 = (Nj2 / Nk2) * Sintheta_j2;
                         double theta_k2 = Asin(Sintheta_k2.Real);
-                        Complex Costheta_k2 = new Complex(Cos(Degree2Radian(theta_k2)), 0);
+                        Complex Costheta_k2 = new Complex(Cos(theta_k2), 0);
 
                         // p파 반사계수
                         Complex r01p = ((Nk2 * Costheta_j2) - (Nj2 * Costheta_k2)) /
