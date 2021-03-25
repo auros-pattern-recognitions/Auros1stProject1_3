@@ -19,7 +19,7 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             // Si_new.txt 파일 로딩(물성값)
-            string[] Si_data = File.ReadAllLines(@"..\Si_new.txt");
+            string[] Si_data = File.ReadAllLines(@"Si_new.txt");
             int dataNum = Si_data.Length;
 
             // 파장, 굴절률, 소광계수 각각의 데이터를 담을 배열 선언
@@ -69,7 +69,7 @@ namespace ConsoleApp1
                 Complex Sintheta_k = (Nj / Nk) * Sintheta_j;
                 Complex theta_k = Complex.Asin(Sintheta_k);
                 Complex Costheta_k = Complex.Cos(theta_k);
-                WriteLine(Sintheta_k + "         " + Costheta_k);
+                
                 // p파 반사계수
                 Complex r01p = ((Nk * Costheta_j) - (Nj * Costheta_k)) /
                                 ((Nk * Costheta_j) + (Nj * Costheta_k));
@@ -197,8 +197,8 @@ namespace ConsoleApp1
 
             #region 측정값과 계산값의 MSE 계산
 
-            List<double> alpha_cal = new List<double>();
-            List<double> beta_cal = new List<double>();
+            List<double> alpha_exp = new List<double>();
+            List<double> beta_exp = new List<double>();
 
 
             waveLength.Clear();
@@ -210,23 +210,23 @@ namespace ConsoleApp1
             {
                 string[] temp = Si2nm_data[i].Split((char)0x09);
                 waveLength.Add(double.Parse(temp[0]));
-                alpha_cal.Add(double.Parse(temp[2]));
-                beta_cal.Add(double.Parse(temp[3]));
+                alpha_exp.Add(double.Parse(temp[2]));
+                beta_exp.Add(double.Parse(temp[3]));
             }
 
 
             string[] Si_exp_data = File.ReadAllLines(@"AOI_65_ab.dat");
             DataNum = Si_exp_data.Length;
 
-            List<double> alpha_exp = new List<double>();
-            List<double> beta_exp = new List<double>();
+            List<double> alpha_cal = new List<double>();
+            List<double> beta_cal = new List<double>();
 
             for (int i = 1; i < DataNum; i++)
             {
                 string[] temp = Si_exp_data[i].Split((char)0x09);
                 waveLength.Add(double.Parse(temp[0]));
-                alpha_exp.Add(double.Parse(temp[1]));
-                beta_exp.Add(double.Parse(temp[2]));
+                alpha_cal.Add(double.Parse(temp[1]));
+                beta_cal.Add(double.Parse(temp[2]));
             }
 
             double sum = 0;
@@ -239,10 +239,12 @@ namespace ConsoleApp1
                 {
                     double difference_MSE = Pow((alpha_exp[i] - alpha_cal[i]), 2) + Pow((beta_exp[i] - beta_cal[i]), 2);
                     sum += difference_MSE;
+                    //WriteLine(" " + "alpha_exp : " + alpha_exp[i] + "    alpha_cal : " + alpha_cal[i]);
+                    //WriteLine(" " + "beta_exp : " + beta_exp[i] + "    beta_cal : " + beta_cal[i]);
 
                     double diff_alpha = (alpha_exp[i] - alpha_cal[i]);
                     double diff_beta = (beta_exp[i] - beta_cal[i]);
-                    WriteLine(waveLength[i] + " " + "alpha 의 차이 : " + diff_alpha + "    beta 의 차이 : " + diff_beta);
+                    //WriteLine(waveLength[i] + " " + "alpha 의 차이 : " + diff_alpha + "    beta 의 차이 : " + diff_beta);
 
                     NewSpectrumOutputFile.WriteLine(waveLength[i] + "\t" + diff_alpha + "\t" + diff_beta);
                 }
